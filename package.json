@@ -16,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/comp426-2022-spring/a04-fdahnoun/issues"
   },
-  "homepage": "https://github.com/comp426-2022-spring/a04-fdahnoun#readme"
+  "homepage": "https://github.com/comp426-2022-spring/a04-fdahnoun#readme",
+  "dependencies": {
+    "better-sqlite3": "^7.5.1",
+    "express": "^4.17.3",
+    "minimist": "^1.2.6"
+  }
 }
