@@ -2,6 +2,14 @@ const express = require('express')
 const app = express()
 const arguments = require('minimist')(process.argv.slice(2))
 
+const logdb = require('./database')
+const morgan = require('morgan')
+const errorhandler = require('errorhandler')
+const fs = require('fs')
+var md5 = require("md5")
+
+app.use(express.urlencoded({ extended: true}));
+app.use(express.json());
 
 
 const port = arguments.port || process.env.port || 5000
@@ -11,9 +19,21 @@ const server = app.listen(port, () => {
     console.log('App listening on port %PORT%'.replace('%PORT%', port))
 });
 
-// function coinFlip() {
-//     return (Math.floor(Math.random() * 2) == 0) ? 'heads' : 'tails';
-// }
+app.use( (req, res, next) => {
+  let logdata = {
+      remoteaddr: req.ip,
+      remoteuser: req.user,
+      time: Date.now(),
+      method: req.method,
+      url: req.url,
+      protocol: req.protocol,
+      httpversion: req.httpVersion,
+      status: res.statusCode,
+      referer: req.headers['referer'],
+      useragent: req.headers['user-agent']
+  }
+  console.log(logdata)
+});
 
 app.get('/app/', (req, res) => {
 // Respond with status 200
@@ -82,6 +102,18 @@ function flipACoin(call) {
   
   }
 
+let data = morgan('combined')
+
+app.use(fs.writeFile('./access.log', data,
+ {flag: 'a'}, (err, req, res, next) => {
+   if (err){
+     console.error(err)
+   } else {
+     console.log(data)
+   }
+ }
+ 
+ ))
 
 app.get('/app/flip/', (req, res) => {
    var flip = coinFlip()
@@ -142,17 +174,3 @@ if (args.help || args.h) {
 }
 
 
-app.use( (req, res, next) => {
-  let logdata = {
-    remoteaddr: req.ip,
-    remoteuser: req.user,
-    time: Date.now(),
-    method: req.method,
-    url: req.url,
-    protocol: req.protocol,
-    httpversion: req.httpVersion,
-    status: res.statusCode,
-    referer: req.headers['referer'],
-    useragent: req.headers['user-agent']
-}
-  })
