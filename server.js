@@ -52,7 +52,9 @@ app.get('/app/', (req, res, next) => {
 
 
 
-let data = morgan('combined')
+
+
+// let data = morgan('combined')
 
 app.use(fs.writeFile('./access.log', data,
  {flag: 'a'}, (err, req, res, next) => {
@@ -120,7 +122,23 @@ if (arguments.help || arguments.h) {
     process.exit(0)
 }
 
+if (arguments.log == 'false'){
+  const WRITESTREAM = fs.createWriteStream('FILE', { flags: 'a' })
+  // Set up the access logging middleware
+  app.use(morgan('FORMAT', { stream: WRITESTREAM }))
 
+}
+
+if (arguments.debug || arguments.d){
+  app.get('/app/log/access/', (req, res) => {
+      const stmt = db.prepare('SELECT * FROM accesslog').all()
+      res.status(200).json(stmt)
+
+  })
+  app.get('/app/error', (req, res) => {
+    throw new Error('Error')
+  })
+}
 
 
 
