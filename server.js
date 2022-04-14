@@ -20,6 +20,16 @@ const server = app.listen(port, () => {
     console.log('App listening on port %PORT%'.replace('%PORT%', port))
 });
 
+app.get('/app/', (req, res, next) => {
+  // Respond with status 200
+      res.statusCode = 200;
+  // respond with status message "OK"
+      res.statusMessage = "Your API works!";
+      res.writeHead(res.statusCode, {'Content-Type' : 'text/plain'})
+      res.end(res.statusCode + ' ' + res.statusMessage);
+      
+  })
+  
 
 app.use( (req, res, next) => {
   let logdata = {
@@ -31,7 +41,7 @@ app.use( (req, res, next) => {
       protocol: req.protocol,
       httpversion: req.httpVersion,
       status: res.statusCode,
-      referrer: req.headers['referrer'],
+      referrer: req.headers['referer'],
       useragent: req.headers['user-agent']
   }
   console.log(logdata)
@@ -40,15 +50,6 @@ app.use( (req, res, next) => {
   next();
 });
 
-app.get('/app/', (req, res, next) => {
-// Respond with status 200
-    res.statusCode = 200;
-// respond with status message "OK"
-    res.statusMessage = "Your API works!";
-    res.writeHead(res.statusCode, {'Content-Type' : 'text/plain'})
-    res.end(res.statusCode + ' ' + res.statusMessage);
-    
-})
 
 
 
@@ -115,12 +116,12 @@ if (arguments.log == 'false'){
 }
 
 if (arguments.debug || arguments.d){
-  app.get('/app/log/access/', (req, res) => {
+  app.get('/app/log/access/', (req, res, next) => {
       const stmt = db.prepare('SELECT * FROM accesslog').all()
       res.status(200).json(stmt)
 
   })
-  app.get('/app/error/', (req, res) => {
+  app.get('/app/error/', (req, res, next) => {
     throw new Error('Error')
   })
 }
