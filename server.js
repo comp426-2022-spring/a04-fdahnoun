@@ -1,12 +1,13 @@
 const express = require('express')
 const app = express()
+
 const arguments = require('minimist')(process.argv.slice(2))
 
-const logdb = require('./database')
+const db = require('./database.js')
+
 const morgan = require('morgan')
-const errorhandler = require('errorhandler')
+
 const fs = require('fs')
-var md5 = require("md5")
 
 app.use(express.urlencoded({ extended: true}));
 app.use(express.json());
@@ -18,6 +19,7 @@ const port = arguments.port || process.env.port || 5000
 const server = app.listen(port, () => {
     console.log('App listening on port %PORT%'.replace('%PORT%', port))
 });
+
 
 app.use( (req, res, next) => {
   let logdata = {
@@ -33,74 +35,22 @@ app.use( (req, res, next) => {
       useragent: req.headers['user-agent']
   }
   console.log(logdata)
+  const stmt = db.prepare('INSERT INTO accesslog (remoteaddr, remoteuser, time, method, url, protocol, httpversion, status, referer, useragent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+  const info = stmt.run(logdata.remoteaddr, logdata.remoteuser, logdata.time, logdata.method, logdata.url, logdata.protocol, logdata.httpversion, logdata.status, logdata.referer, logdata.useragent)
+  next();
 });
 
-app.get('/app/', (req, res) => {
+app.get('/app/', (req, res, next) => {
 // Respond with status 200
     res.statusCode = 200;
 // respond with status message "OK"
-    res.statusMessage = "OK";
-    res.writeHead( res.statusCode, { 'Content-Type' : 'text/plain' });
+    res.statusMessage = "Your API works!";
+    res.writeHead(res.statusCode, {'Content-Type' : 'text/plain'})
     res.end(res.statusCode + ' ' + res.statusMessage);
     
 })
 
-function coinFlip() {
-    return (Math.floor(Math.random() * 2) == 0) ? 'heads' : 'tails';
-}
 
-function coinFlips(flips) {
-    const headsOrTails = []
-    if (flips == null){
-      headsOrTails.push(coinFlip())
-      return headsOrTails
-    }
-    for (let x = 0; x < flips; x++){
-      var outcome = Math.floor(Math.random() * 2) == 0 ? 'heads' : 'tails'
-      headsOrTails.push(outcome)
-    }
-    
-  
-    return headsOrTails
-  
-    }
-
-function countFlips(array) {
-  var dict = {};
-  dict = {heads: 0, tails: 0}
-  
-  for (let x = 0; x < array.length; x++){
-    if (array[x] == "heads"){
-      dict.heads += 1
-
-    }else{
-      dict.tails += 1
-    }
-  }
-  if (dict.heads == 0){
-    delete dict["heads"]
-  } else if (dict.tails == 0){
-    delete dict["tails"]
-  }
-  return dict
-}
-
-function flipACoin(call) {
-    var flipCoin = {};
-    var thisFlip = coinFlip()
-    var final_result = ""
-    if (call === thisFlip){
-      final_result = 'win'
-    } else{
-      final_result = 'lose'
-    }
-    
-    flipCoin = {call: call, flip: thisFlip, result: final_result}
-  
-    
-    return flipCoin
-  
-  }
 
 let data = morgan('combined')
 
@@ -146,10 +96,7 @@ app.use(function(req, res){
 
 })
 
-// Require minimist module
-const args = require('minimist')(process.argv.slice(2))
-// See what is stored in the object produced by minimist
-console.log(args)
+
 // Store help text 
 const help = (`
 server.js [options]
@@ -168,9 +115,73 @@ server.js [options]
 --help	Return this message and exit.
 `)
 // If --help or -h, echo help text to STDOUT and exit
-if (args.help || args.h) {
+if (arguments.help || arguments.h) {
     console.log(help)
     process.exit(0)
 }
 
 
+
+
+
+
+
+
+// COIN FUNCTIONS
+
+function coinFlip() {
+  return (Math.floor(Math.random() * 2) == 0) ? 'heads' : 'tails';
+}
+
+function coinFlips(flips) {
+  const headsOrTails = []
+  if (flips == null){
+    headsOrTails.push(coinFlip())
+    return headsOrTails
+  }
+  for (let x = 0; x < flips; x++){
+    var outcome = Math.floor(Math.random() * 2) == 0 ? 'heads' : 'tails'
+    headsOrTails.push(outcome)
+  }
+  
+
+  return headsOrTails
+
+  }
+
+function countFlips(array) {
+var dict = {};
+dict = {heads: 0, tails: 0}
+
+for (let x = 0; x < array.length; x++){
+  if (array[x] == "heads"){
+    dict.heads += 1
+
+  }else{
+    dict.tails += 1
+  }
+}
+if (dict.heads == 0){
+  delete dict["heads"]
+} else if (dict.tails == 0){
+  delete dict["tails"]
+}
+return dict
+}
+
+function flipACoin(call) {
+  var flipCoin = {};
+  var thisFlip = coinFlip()
+  var final_result = ""
+  if (call === thisFlip){
+    final_result = 'win'
+  } else{
+    final_result = 'lose'
+  }
+  
+  flipCoin = {call: call, flip: thisFlip, result: final_result}
+
+  
+  return flipCoin
+
+}
