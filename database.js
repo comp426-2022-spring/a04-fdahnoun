@@ -19,13 +19,13 @@ if (row === undefined){
             protocol TEXT,
             httpversion TEXT,
             status TEXT, 
-            referer TEXT,
+            referrer TEXT,
             useragent TEXT
         );
     `
     db.exec(sqlInit)
 } else{
-    console.log('Log databse exists.')
+    console.log('Log database exists.')
 }
 
 module.exports = db
