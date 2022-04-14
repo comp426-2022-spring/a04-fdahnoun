@@ -30,6 +30,37 @@ app.get('/app/', (req, res, next) => {
       
   })
   
+if (arguments.log == 'false'){
+  console.log("not creating access.log")
+} else{
+  const WRITESTREAM = fs.createWriteStream('access.log', { flags: 'a' })
+  // Set up the access logging middleware
+  app.use(morgan('combined', { stream: WRITESTREAM }))
+  
+}
+
+// Store help text 
+const help = (`
+server.js [options]
+
+--port	Set the port number for the server to listen on. Must be an integer
+            between 1 and 65535.
+
+--debug	If set to true, creates endlpoints /app/log/access/ which returns
+            a JSON access log from the database and /app/error which throws 
+            an error with the message "Error test successful." Defaults to 
+            false.
+
+--log		If set to false, no log files are written. Defaults to true.
+            Logs are always written to database.
+
+--help	Return this message and exit.
+`)
+
+if (arguments.help || arguments.h) {
+  console.log(help)
+  process.exit(0)
+}
 
 app.use( (req, res, next) => {
   let logdata = {
@@ -49,6 +80,20 @@ app.use( (req, res, next) => {
   const info = stmt.run(logdata.remoteaddr, logdata.remoteuser, logdata.time, logdata.method, logdata.url, logdata.protocol, logdata.httpversion, logdata.status, logdata.referer, logdata.useragent)
   next();
 });
+
+
+
+
+if (arguments.debug || arguments.d){
+    app.get('/app/log/access/', (req, res, next) => {
+    const stmt = db.prepare('SELECT * FROM accesslog').all()
+    res.status(200).json(stmt)
+
+    })
+    app.get('/app/error/', (req, res, next) => {
+      throw new Error('Error')
+    })
+}
 
 
 
@@ -85,46 +130,9 @@ app.use(function(req, res){
 })
 
 
-// Store help text 
-const help = (`
-server.js [options]
 
---port	Set the port number for the server to listen on. Must be an integer
-            between 1 and 65535.
-
---debug	If set to true, creates endlpoints /app/log/access/ which returns
-            a JSON access log from the database and /app/error which throws 
-            an error with the message "Error test successful." Defaults to 
-            false.
-
---log		If set to false, no log files are written. Defaults to true.
-            Logs are always written to database.
-
---help	Return this message and exit.
-`)
 // If --help or -h, echo help text to STDOUT and exit
-if (arguments.help || arguments.h) {
-    console.log(help)
-    process.exit(0)
-}
 
-if (arguments.log == 'false'){
-  const WRITESTREAM = fs.createWriteStream('FILE', { flags: 'a' })
-  // Set up the access logging middleware
-  app.use(morgan('FORMAT', { stream: WRITESTREAM }))
-
-}
-
-if (arguments.debug || arguments.d){
-  app.get('/app/log/access/', (req, res, next) => {
-      const stmt = db.prepare('SELECT * FROM accesslog').all()
-      res.status(200).json(stmt)
-
-  })
-  app.get('/app/error/', (req, res, next) => {
-    throw new Error('Error')
-  })
-}
 
 
 
