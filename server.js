@@ -135,7 +135,7 @@ if (arguments.debug || arguments.d){
       res.status(200).json(stmt)
 
   })
-  app.get('/app/error', (req, res) => {
+  app.get('/app/error/', (req, res) => {
     throw new Error('Error')
   })
 }
@@ -145,7 +145,7 @@ if (arguments.debug || arguments.d){
 
 
 
-// COIN FUNCTIONS
+// functions from previous assignment
 
 function coinFlip() {
   return (Math.floor(Math.random() * 2) == 0) ? 'heads' : 'tails';
