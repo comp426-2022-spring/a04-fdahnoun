@@ -56,16 +56,16 @@ app.get('/app/', (req, res, next) => {
 
 // let data = morgan('combined')
 
-app.use(fs.writeFile('./access.log', data,
- {flag: 'a'}, (err, req, res, next) => {
-   if (err){
-     console.error(err)
-   } else {
-     console.log(data)
-   }
- }
+// app.use(fs.writeFile('./access.log', data,
+//  {flag: 'a'}, (err, req, res, next) => {
+//    if (err){
+//      console.error(err)
+//    } else {
+//      console.log(data)
+//    }
+//  }
  
- ))
+//  ))
 
 app.get('/app/flip/', (req, res) => {
    var flip = coinFlip()
